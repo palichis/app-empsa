@@ -25,6 +25,7 @@ export async function POST(request: Request) {
 
     if (cookie) {
       headers['Cookie'] = cookie;
+      console.log('[v0] Sending cookie:', cookie.substring(0, 30) + '...');
     }
 
     const targetFullUrl = `${normalizedUrl}${path}`;
