@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     if (cookie) {
       headers['Cookie'] = cookie;
-      console.log('[v0] Sending cookie:', cookie.substring(0, 30) + '...');
+      console.log('[v0] Sending cookie:', cookie);
     }
 
     const targetFullUrl = `${normalizedUrl}${path}`;
@@ -76,13 +76,18 @@ export async function POST(request: Request) {
     }
 
     // Extract session_id from set-cookie header and include it in response
+    // The set-cookie header can have multiple cookies, find session_id
     const setCookie = response.headers.get('set-cookie');
     let extractedSessionId: string | null = null;
     if (setCookie) {
-      const match = setCookie.match(/session_id=([^;]+)/);
-      if (match) {
-        extractedSessionId = match[1];
-        console.log('[v0] Extracted session_id from cookie');
+      // Split by semicolon and find the session_id part (like Flutter does)
+      const parts = setCookie.split(';');
+      const sessionPart = parts.find(p => p.trim().startsWith('session_id='));
+      if (sessionPart) {
+        extractedSessionId = sessionPart.trim().replace('session_id=', '');
+        console.log('[v0] Extracted session_id from cookie:', extractedSessionId.substring(0, 20) + '...');
+      } else {
+        console.log('[v0] No session_id found in set-cookie:', setCookie.substring(0, 100));
       }
     }
 

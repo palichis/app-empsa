@@ -37,6 +37,7 @@ export default function DashboardPage() {
     }
     try {
       const parsed = JSON.parse(sessionStr);
+      console.log('[v0] Loaded session - uid:', parsed.uid, 'sessionId length:', parsed.sessionId?.length);
       setSession(parsed);
     } catch {
       router.replace('/login');

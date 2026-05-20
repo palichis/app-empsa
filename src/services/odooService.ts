@@ -15,6 +15,8 @@ export class OdooService {
     sessionId?: string
   ) {
     const cookie = sessionId ? `session_id=${sessionId}` : undefined;
+    console.log('[v0] callProxy - path:', path, 'hasSessionId:', !!sessionId);
+    
     const response = await fetch('/api/odoo/proxy', {
       method: 'POST',
       headers: {
@@ -35,6 +37,12 @@ export class OdooService {
     }
 
     const data = await response.json();
+    
+    // Log if there's an error in the response
+    if (data.error) {
+      console.log('[v0] Odoo error response:', data.error.message || data.error);
+    }
+    
     return { data, headers: response.headers };
   }
 

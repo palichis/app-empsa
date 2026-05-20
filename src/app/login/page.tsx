@@ -53,6 +53,8 @@ export default function LoginPage() {
       console.log('Attempting authentication with config:', config);
       const authResult = await OdooService.authenticate(config, username, password);
       
+      console.log('[v0] Auth successful - sessionId length:', authResult.sessionId?.length);
+      
       // Save session details
       localStorage.setItem('epmsa_session', JSON.stringify(authResult));
       
