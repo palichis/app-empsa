@@ -49,7 +49,25 @@ export class OdooService {
       },
     };
 
-    const { data } = await this.callProxy(config, '/web/session/authenticate', 'POST', payload);
+    const response = await fetch('/api/odoo/proxy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        targetUrl: config.serverUrl,
+        path: '/web/session/authenticate',
+        method: 'POST',
+        body: payload,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Proxy error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
 
     if (data.error) {
       throw new Error(data.error.data?.message || data.error.message || 'Error de autenticación');
@@ -60,11 +78,28 @@ export class OdooService {
     }
 
     const result = data.result;
-    // Extract session id from response if present, otherwise search for set-cookie headers
-    // Note: Vercel/Next server sets headers. For security, we can read uid and session id from result
     const uid = result.uid;
-    const sessionId = result.session_id;
     const name = result.name;
+    
+    // Try to get session_id from result body first
+    let sessionId = result.session_id;
+    
+    // If not in body, try to extract from set-cookie header
+    if (!sessionId) {
+      const setCookie = response.headers.get('set-cookie');
+      if (setCookie) {
+        const match = setCookie.match(/session_id=([^;]+)/);
+        if (match) {
+          sessionId = match[1];
+        }
+      }
+    }
+
+    console.log('[v0] Auth result - uid:', uid, 'sessionId:', sessionId ? 'present' : 'missing');
+
+    if (!sessionId) {
+      throw new Error('No se pudo obtener el session_id de Odoo');
+    }
 
     return {
       uid,
