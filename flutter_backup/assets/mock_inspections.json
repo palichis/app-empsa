@@ -1,0 +1,131 @@
+[
+  {
+    "id": 101,
+    "name": "Salida - Internacional: Juan Pérez",
+    "date": "2025-04-09T08:30:00",
+    "start_time": "2025-04-09T08:30:00",
+    "end_time": null,
+    "employee": {
+      "id":1,
+      "name":"Juan Pérez"
+    },
+    "supervisors": [{
+      "id":3,
+      "name":"Carlos Licto"
+    }],
+    "operation": "departure",
+    "type": "I",
+    "state": "assigned",
+    "date_str": "2025-04-09",
+    "planned": true,
+    "executed": null
+  },
+  {
+    "id": 102,
+    "name": "Llegada - Doméstico: María López",
+    "date": "2025-04-09T09:00:00",
+    "start_time": "2025-04-09T09:00:00",
+    "end_time": null,
+    "employee": {
+      "id":2,
+      "name":"María López"
+    },
+    "supervisors": [{
+      "id":3,
+      "name":"Carlos Licto"
+    }],
+    "operation": "arrival",
+    "type": "D",
+    "state": "pending",
+    "date_str": "2025-04-09",
+    "planned": null,
+    "executed": null,
+    "detail": {
+      "id": 330,
+      "name": "1002-060-122-FLUJOS-EPMSA-GTC-DCC",
+      "measurement_date": "2025-03-01",
+      "peak_hour": "18:50",
+      "flight_count": 5,
+      "prepared_by": [
+        12,
+        "María López"
+      ],
+      "public_hall_time": "18:50",
+      "public_hall_pax_waiting_area": 40,
+      "used_belts_123": [
+        
+      ],
+      "used_belts_456": [
+        
+      ],
+      "used_belts_area": 0.0,
+      "baggage_claim_time_1": null,
+      "baggage_claim_pax_waiting_area_1": 0,
+      "baggage_claim_time_2": null,
+      "baggage_claim_pax_waiting_area_2": 0,
+      "baggage_claim_time_3": null,
+      "baggage_claim_pax_waiting_area_3": 0,
+      "event_time": null,
+      "location": null,
+      "description": null,
+      "consequence": null,
+      "baggage_claim_lines": [
+        {
+          "id": 1956,
+          "flight_number": "AV1683",
+          "origin": "San Cristóbal",
+          "scheduled_time_a_hhmm": "15:50",
+          "arrival_time_b_hhmm": null,
+          "assigned_belt": null,
+          "first_pax_arrival_c_hhmm": null,
+          "first_bag_arrival_d_hhmm": null,
+          "last_bag_arrival_e_hhmm": null
+        },
+        {
+          "id": 1957,
+          "flight_number": "LA1412",
+          "origin": "Galapagos",
+          "scheduled_time_a_hhmm": "16:05",
+          "arrival_time_b_hhmm": null,
+          "assigned_belt": null,
+          "first_pax_arrival_c_hhmm": null,
+          "first_bag_arrival_d_hhmm": null,
+          "last_bag_arrival_e_hhmm": null
+        },
+        {
+          "id": 1958,
+          "flight_number": "AV1633",
+          "origin": "Galapagos",
+          "scheduled_time_a_hhmm": "16:15",
+          "arrival_time_b_hhmm": null,
+          "assigned_belt": null,
+          "first_pax_arrival_c_hhmm": null,
+          "first_bag_arrival_d_hhmm": null,
+          "last_bag_arrival_e_hhmm": null
+        },
+        {
+          "id": 1959,
+          "flight_number": "AV1673",
+          "origin": "Guayaquil",
+          "scheduled_time_a_hhmm": "16:21",
+          "arrival_time_b_hhmm": null,
+          "assigned_belt": null,
+          "first_pax_arrival_c_hhmm": null,
+          "first_bag_arrival_d_hhmm": null,
+          "last_bag_arrival_e_hhmm": null
+        },
+        {
+          "id": 1960,
+          "flight_number": "LA1378",
+          "origin": "Guayaquil",
+          "scheduled_time_a_hhmm": "16:50",
+          "arrival_time_b_hhmm": null,
+          "assigned_belt": null,
+          "first_pax_arrival_c_hhmm": null,
+          "first_bag_arrival_d_hhmm": null,
+          "last_bag_arrival_e_hhmm": null
+        }
+      ]
+    }
+  }
+]
