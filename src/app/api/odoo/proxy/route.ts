@@ -12,6 +12,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Falta la ruta del endpoint (path)' }, { status: 400 });
     }
 
+    // Ensure HTTPS is used (force port 443)
+    let normalizedUrl = targetUrl.replace(/\/$/, '');
+    if (!normalizedUrl.startsWith('https://')) {
+      normalizedUrl = normalizedUrl.replace(/^http:\/\//, 'https://');
+    }
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -19,21 +25,47 @@ export async function POST(request: Request) {
 
     if (cookie) {
       headers['Cookie'] = cookie;
+      console.log('[v0] Sending cookie:', cookie);
     }
 
-    const targetFullUrl = `${targetUrl.replace(/\/$/, '')}${path}`;
+    const targetFullUrl = `${normalizedUrl}${path}`;
     console.log(`Proxying request: [${method}] ${targetFullUrl}`);
 
     const options: RequestInit = {
       method,
       headers,
+      // @ts-expect-error - Next.js extends RequestInit with next options
+      next: { revalidate: 0 },
     };
 
     if (method === 'POST' && body) {
       options.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
 
-    const response = await fetch(targetFullUrl, options);
+    // Create AbortController for timeout (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    options.signal = controller.signal;
+
+    let response: Response;
+    try {
+      response = await fetch(targetFullUrl, options);
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      // Handle specific connection errors
+      if (fetchError.name === 'AbortError') {
+        throw new Error(`Timeout de conexion a ${normalizedUrl} (30s)`);
+      }
+      if (fetchError.cause?.code === 'ECONNREFUSED') {
+        throw new Error(`Conexion rechazada a ${normalizedUrl}. Verifica que el servidor este activo.`);
+      }
+      if (fetchError.cause?.code === 'ETIMEDOUT' || fetchError.message?.includes('ConnectTimeoutError')) {
+        throw new Error(`Timeout de conexion a ${normalizedUrl}. El puerto 443 puede estar bloqueado.`);
+      }
+      throw fetchError;
+    }
+    clearTimeout(timeoutId);
+
     const text = await response.text();
 
     let jsonResponse;
@@ -43,9 +75,35 @@ export async function POST(request: Request) {
       jsonResponse = { raw: text };
     }
 
+    // Extract session_id from set-cookie header and include it in response
+    // The set-cookie header can have multiple cookies, find session_id
+    const setCookie = response.headers.get('set-cookie');
+    let extractedSessionId: string | null = null;
+    if (setCookie) {
+      // Split by semicolon and find the session_id part (like Flutter does)
+      const parts = setCookie.split(';');
+      const sessionPart = parts.find(p => p.trim().startsWith('session_id='));
+      if (sessionPart) {
+        extractedSessionId = sessionPart.trim().replace('session_id=', '');
+        console.log('[v0] Extracted session_id from cookie:', extractedSessionId.substring(0, 20) + '...');
+      } else {
+        console.log('[v0] No session_id found in set-cookie:', setCookie.substring(0, 100));
+      }
+    }
+
+    // If we extracted a session_id and the response has a result, inject it
+    if (extractedSessionId && jsonResponse.result && !jsonResponse.result.session_id) {
+      jsonResponse.result.session_id = extractedSessionId;
+      console.log('[v0] Injected session_id into response body');
+    }
+    
+    // Log if session expired error
+    if (jsonResponse.error?.message?.includes('Session')) {
+      console.log('[v0] Odoo session error:', jsonResponse.error.message);
+    }
+
     // Forward the set-cookie header if Odoo sets a session id
     const resHeaders = new Headers();
-    const setCookie = response.headers.get('set-cookie');
     if (setCookie) {
       resHeaders.append('set-cookie', setCookie);
     }
@@ -56,6 +114,9 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error('Proxy Error:', error);
-    return NextResponse.json({ error: error.message || 'Error en el proxy de Odoo' }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Error en el proxy de Odoo' },
+      { status: 500 }
+    );
   }
 }
